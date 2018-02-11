@@ -4,13 +4,13 @@ import { expect } from 'chai'
 import { mount } from 'avoriaz'
 import sinon from 'sinon'
 import sinonStubPromise from 'sinon-stub-promise'
-import FetchDataComponent from '../../../ClientApp/components/fetchdata/fetchdata'
-import store from '../../../ClientApp/store'
-import * as Forecast from '../../../ClientApp/store/modules/forecast'
-import fetch from 'isomorphic-fetch'
+import FetchDataComponent from '@components/fetchdata/fetchdata'
+import store from '@store/index'
+import * as Forecast from '@store/modules/forecast'
+
+window.fetch = require('isomorphic-fetch')
 
 sinonStubPromise(sinon)
-window.fetch = fetch
 
 const mockResponse = (body: any = {}) => {
     return new Response(JSON.stringify(body), {
@@ -22,7 +22,8 @@ const mockResponse = (body: any = {}) => {
 }
 
 describe('vuex: forecast module', () => {
-    let stubFetch
+    let stubFetch: sinon.SinonStub
+
     beforeEach(() => {
         // do something be each test
         // reset the state for test
@@ -70,14 +71,14 @@ describe('vuex: forecast module', () => {
     })
 
     it('should change correct request status via commit', () => {
-        Forecast.commitForecastStatusLoading(store)
+        Forecast.commitForecastStatusWillStart(store)
         expect(store.state.forecast.forecastStatus).to.eql({
             loading: true,
             failed: false,
             received: false
         })
 
-        Forecast.commitForecastStatusFailed(store)
+        Forecast.commitForecastStatusDidFail(store)
         expect(store.state.forecast.forecastStatus).to.eql({
             loading: false,
             failed: true,
@@ -96,7 +97,7 @@ describe('vuex: forecast module', () => {
         // load the data from mock api
         await Forecast.dispatchRequestForecastData(store)
 
-        const data = Forecast.getForecastData(store)
+        const data = Forecast.readForecastData(store)
         expect(data).to.eql([{
             dateFormatted: '11/07/2017',
             summary: 'Hot',
@@ -104,14 +105,14 @@ describe('vuex: forecast module', () => {
             temperatureF: 15
         }])
 
-        const status = Forecast.getForecastStatus(store)
+        const status = Forecast.readForecastStatus(store)
         expect(status).to.eql({
             loading: false,
             failed: false,
             received: true
         })
 
-        const count = Forecast.getCountForecastData(store)
+        const count = Forecast.readCountForecastData(store)
         expect(count).to.eql(1)
 
     })

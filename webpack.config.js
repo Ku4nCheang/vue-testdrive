@@ -1,9 +1,11 @@
 const path = require('path')
 const webpack = require('webpack')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
-var ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
+
 const bundleOutputDir = './wwwroot/dist'
-var babelLoader = {
+const babelLoader = {
     loader: 'babel-loader',
     options: {
         cacheDirectory: true,
@@ -49,7 +51,7 @@ module.exports = (env) => {
             }
         },
         entry: {
-            'main': ['babel-polyfill', './ClientApp/boot.ts']
+            'main': ['./ClientApp/boot.ts']
         },
         module: {
             rules: [{
@@ -57,9 +59,16 @@ module.exports = (env) => {
                 loader: 'vue-loader',
                 include: /ClientApp/,
                 options: {
-                    loaders: {
+                    loaders: isDevBuild ? {
                         js: vuetsloaders,
                         ts: vuetsloaders
+                    } : {
+                        js: vuetsloaders,
+                        ts: vuetsloaders,
+                        css: ExtractTextPlugin.extract({
+                            use: 'css-loader?minimize',
+                            fallback: 'vue-style-loader'
+                        })
                     }
                 }
             },
@@ -118,7 +127,7 @@ module.exports = (env) => {
                 filename: '[file].map', // Remove this line if you prefer inline source maps
                 moduleFilenameTemplate: path.relative(bundleOutputDir, '[resourcePath]') // Point sourcemap entries to the original file locations on disk
             }),
-            new webpack.optimize.UglifyJsPlugin({
+            new UglifyJSPlugin({
                 compress: {
                     warnings: false
                 }

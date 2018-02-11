@@ -1,5 +1,5 @@
 import { getStoreAccessors } from 'vuex-typescript'
-import State from '../state'
+import State, { ForecastState, WeatherForecast, RequestStatus } from '../state'
 import { ActionContext, Store } from 'vuex'
 
 /* ---------------------------------------------------------------- */
@@ -8,25 +8,7 @@ import { ActionContext, Store } from 'vuex'
 // Declare your interface and type in this section
 /* ---------------------------------------------------------------- */
 
-export interface WeatherForecast {
-    dateFormatted: string
-    temperatureC: number
-    temperatureF: number
-    summary: string
-}
-
-export interface RequestStatus {
-    loading: boolean,
-    failed: boolean,
-    received: boolean
-}
-
-export interface ForecastState {
-    // Define properties
-    forecastStatus: RequestStatus
-    forecastData: WeatherForecast[]
-}
-
+const namespace = 'forecast'
 type ForecastContext = ActionContext<ForecastState, State>
 
 /* ---------------------------------------------------------------- */
@@ -63,7 +45,7 @@ const mutations = {
         }
         state.forecastData = []
     },
-    setForecastDataDidReceived (state: ForecastState, forecastData: WeatherForecast[]) {
+    setForecastDataDidReceive (state: ForecastState, forecastData: WeatherForecast[]) {
         state.forecastStatus = {
             ...defaultForecastStatus,
             received: true
@@ -71,7 +53,7 @@ const mutations = {
         // set forecast data
         state.forecastData = forecastData
     },
-    setForecastStatusDidStarted (state: ForecastState) {
+    setForecastStatusWillStart (state: ForecastState) {
         state.forecastStatus = {
             ...defaultForecastStatus,
             loading: true
@@ -79,7 +61,7 @@ const mutations = {
         // reset forecast data when try to reload data
         state.forecastData = []
     },
-    setForecastStatusDidFailed (state: ForecastState) {
+    setForecastStatusDidFail (state: ForecastState) {
         state.forecastStatus = {
             ...defaultForecastStatus,
             failed: true
@@ -121,15 +103,15 @@ const actions = {
         commitClear(context)
     },
     async requestForecastData (context: ForecastContext) {
-        commitForecastStatusDidStarted(context)
+        commitForecastStatusWillStart(context)
         // loading api to received data
         try {
             const response = await fetch('api/SampleData/WeatherForecasts')
             const data = await response.json() as WeatherForecast[]
-            commitForecastDataDidReceived(context, data)
+            commitForecastDataDidReceive(context, data)
             return true
         } catch (reason) {
-            commitForecastStatusDidFailed(context)
+            commitForecastStatusDidFail(context)
         }
 
         return false
@@ -161,7 +143,7 @@ export default store
 
 // Get the accessor to specified store
 // The namespace must be equal to the name in the root store
-const { commit, read, dispatch } = getStoreAccessors<ForecastState, State>('forecast')
+const { commit, read, dispatch } = getStoreAccessors<ForecastState, State>(namespace)
 
 /* ---------------------------------------------------------------- */
 
@@ -170,9 +152,9 @@ const { commit, read, dispatch } = getStoreAccessors<ForecastState, State>('fore
 
 // write your code here
 export const commitClear = commit(mutations.setClear)
-export const commitForecastStatusDidFailed = commit(mutations.setForecastStatusDidFailed)
-export const commitForecastStatusDidStarted = commit(mutations.setForecastStatusDidStarted)
-export const commitForecastDataDidReceived = commit(mutations.setForecastDataDidReceived)
+export const commitForecastStatusDidFail = commit(mutations.setForecastStatusDidFail)
+export const commitForecastStatusWillStart = commit(mutations.setForecastStatusWillStart)
+export const commitForecastDataDidReceive = commit(mutations.setForecastDataDidReceive)
 
 /* ---------------------------------------------------------------- */
 
@@ -180,9 +162,9 @@ export const commitForecastDataDidReceived = commit(mutations.setForecastDataDid
 // export const getSomething = read(getters.getSomethingInStore)
 
 // write your code here
-export const getForecastData = read(getters.getForecastData)
-export const getForecastStatus = read(getters.getForecastStatus)
-export const getCountForecastData = read(getters.getCountForecastData)
+export const readForecastData = read(getters.getForecastData)
+export const readForecastStatus = read(getters.getForecastStatus)
+export const readCountForecastData = read(getters.getCountForecastData)
 
 /* ---------------------------------------------------------------- */
 

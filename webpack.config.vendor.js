@@ -13,21 +13,23 @@ module.exports = (env) => {
         devtool: 'source-map',
         entry: {
             vendor: [
-                'bootstrap',
-                'bootstrap/dist/css/bootstrap.css',
-                'event-source-polyfill',
-                'isomorphic-fetch',
-                'jquery',
+                // uncomment following to support IE11
+                // 'event-source-polyfill',
+                // 'babel-polyfill',
+                // 'isomorphic-fetch',
+                'milligram/dist/milligram.css',
                 'vue',
                 'vue-router',
-                'vuex'
+                'vuex',
+                'vue-class-component',
+                'vue-property-decorator'
             ]
         },
         module: {
             exprContextRegExp: /$^/,
             exprContextCritical: false,
             rules: [
-                { test: /\.css(\?|$)/, use: extractCSS.extract({ use: isDevBuild ? 'css-loader' : 'css-loader?minimize' }) },
+                { test: /\.css(\?|$)/, use: extractCSS.extract({ use: 'css-loader?minimize' }) },
                 { test: /\.(png|woff|woff2|eot|ttf|svg)(\?|$)/, use: 'url-loader?limit=100000' }
             ]
         },
@@ -50,7 +52,11 @@ module.exports = (env) => {
                 name: '[name]_[hash]'
             })
         ].concat(isDevBuild ? [] : [
-            new UglifyJSPlugin()
+            new UglifyJSPlugin({
+                compress: {
+                    warnings: false
+                }
+            })
         ])
     }]
 }

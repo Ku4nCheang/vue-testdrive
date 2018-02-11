@@ -1,0 +1,110 @@
+2018-02-11T14:55:27.1216020+08:00  [ERR] Hash: de833da1fe8e2cbdc1cd
+Version: webpack 3.10.0
+Time: 807ms
+  Asset    Size  Chunks                    Chunk Names
+main.js  336 kB       0  [emitted]  [big]  main
+   [1] multi event-source-polyfill webpack-hot-middleware/client?path=__webpack_hmr&dynamicPublicPath=true ./ClientApp/boot.ts 52 bytes {0} [built]
+   [2] ./node_modules/event-source-polyfill/src/eventsource.js 21.4 kB {0} [built]
+   [3] (webpack)-hot-middleware/client.js?path=__webpack_hmr&dynamicPublicPath=true 7.35 kB {0} [built]
+   [4] (webpack)/buildin/module.js 517 bytes {0} [built]
+   [5] ./node_modules/querystring-es3/index.js 127 bytes {0} [built]
+   [6] ./node_modules/querystring-es3/decode.js 2.51 kB {0} [built]
+   [7] ./node_modules/querystring-es3/encode.js 2.54 kB {0} [built]
+   [8] ./node_modules/strip-ansi/index.js 161 bytes {0} [built]
+   [9] ./node_modules/ansi-regex/index.js 135 bytes {0} [built]
+  [10] (webpack)-hot-middleware/client-overlay.js 2.21 kB {0} [built]
+  [11] ./node_modules/ansi-html/index.js 4.26 kB {0} [built]
+  [12] ./node_modules/html-entities/index.js 231 bytes {0} [built]
+  [13] ./node_modules/html-entities/lib/xml-entities.js 2.99 kB {0} [built]
+  [15] (webpack)-hot-middleware/process-update.js 4.33 kB {0} [built]
+  [16] ./ClientApp/boot.ts 74 bytes {0} [built] [failed] [2 errors]
+    + 2 hidden modules
+
+ERROR in ./ClientApp/boot.ts
+Module build failed: error while parsing tsconfig.json
+ @ multi event-source-polyfill webpack-hot-middleware/client?path=__webpack_hmr&dynamicPublicPath=true ./ClientApp/boot.ts
+
+ERROR in /Users/kuan/Projects/vue-testdrive/tsconfig.json
+[tsl] ERROR
+      TS5023: Unknown compiler option 'strictPropertyInitialization'.
+ @ multi event-source-polyfill webpack-hot-middleware/client?path=__webpack_hmr&dynamicPublicPath=true ./ClientApp/boot.ts (d7d56318)
+2018-02-11T14:55:29.2986250+08:00  [FTL] Unable to start Kestrel. (fc6a528d)
+System.IO.IOException: Failed to bind to address https://0.0.0.0:5001: address already in use. ---> Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.AddressInUseException: Error -48 EADDRINUSE address already in use ---> Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException: Error -48 EADDRINUSE address already in use
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.ThrowError(Int32 statusCode)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.tcp_getsockname(UvTcpHandle handle, SockAddr& addr, Int32& namelen)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle.GetSockIPEndPoint()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Listener.ListenTcp(Boolean useFileHandle)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Listener.CreateListenSocket()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Listener.<>c.<StartAsync>b__8_0(Listener listener)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread.CallbackAdapter`1.<>c.<.cctor>b__3_1(Object callback, Object state)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread.DoPostWork()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ListenerPrimary.<StartAsync>d__15.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransport.<BindAsync>d__20.MoveNext()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransport.<BindAsync>d__20.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.<>c__DisplayClass21_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.<BindEndpointAsync>d__5.MoveNext()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.<BindEndpointAsync>d__5.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.EndpointsStrategy.<BindAsync>d__2.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.<BindAsync>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer.<StartAsync>d__21`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.AspNetCore.Hosting.Internal.WebHost.<StartAsync>d__26.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Microsoft.AspNetCore.Hosting.WebHostExtensions.<RunAsync>d__5.MoveNext()
+2018-02-11T14:56:34.3530430+08:00  [ERR] Hash: de833da1fe8e2cbdc1cd
+Version: webpack 3.10.0
+Time: 771ms
+  Asset    Size  Chunks                    Chunk Names
+main.js  336 kB       0  [emitted]  [big]  main
+   [1] multi event-source-polyfill webpack-hot-middleware/client?path=__webpack_hmr&dynamicPublicPath=true ./ClientApp/boot.ts 52 bytes {0} [built]
+   [2] ./node_modules/event-source-polyfill/src/eventsource.js 21.4 kB {0} [built]
+   [3] (webpack)-hot-middleware/client.js?path=__webpack_hmr&dynamicPublicPath=true 7.35 kB {0} [built]
+   [4] (webpack)/buildin/module.js 517 bytes {0} [built]
+   [5] ./node_modules/querystring-es3/index.js 127 bytes {0} [built]
+   [6] ./node_modules/querystring-es3/decode.js 2.51 kB {0} [built]
+   [7] ./node_modules/querystring-es3/encode.js 2.54 kB {0} [built]
+   [8] ./node_modules/strip-ansi/index.js 161 bytes {0} [built]
+   [9] ./node_modules/ansi-regex/index.js 135 bytes {0} [built]
+  [10] (webpack)-hot-middleware/client-overlay.js 2.21 kB {0} [built]
+  [11] ./node_modules/ansi-html/index.js 4.26 kB {0} [built]
+  [12] ./node_modules/html-entities/index.js 231 bytes {0} [built]
+  [13] ./node_modules/html-entities/lib/xml-entities.js 2.99 kB {0} [built]
+  [15] (webpack)-hot-middleware/process-update.js 4.33 kB {0} [built]
+  [16] ./ClientApp/boot.ts 74 bytes {0} [built] [failed] [2 errors]
+    + 2 hidden modules
+
+ERROR in ./ClientApp/boot.ts
+Module build failed: error while parsing tsconfig.json
+ @ multi event-source-polyfill webpack-hot-middleware/client?path=__webpack_hmr&dynamicPublicPath=true ./ClientApp/boot.ts
+
+ERROR in /Users/kuan/Projects/vue-testdrive/tsconfig.json
+[tsl] ERROR
+      TS5023: Unknown compiler option 'strictPropertyInitialization'.
+ @ multi event-source-polyfill webpack-hot-middleware/client?path=__webpack_hmr&dynamicPublicPath=true ./ClientApp/boot.ts (1b39b2d8)

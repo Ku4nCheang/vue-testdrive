@@ -1,21 +1,23 @@
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
 import * as Forecast from '../../store/modules/forecast'
-import { Getter } from '../../decorators'
 
 @Component
 export default class FetchDataComponent extends Vue {
     timeSpent: number = 0
     failedReason: string = ''
 
-    @Getter(Forecast.getForecastData)
-    forecasts: Forecast.WeatherForecast[]
+    get forecasts () {
+        return Forecast.readForecastData(this.$store)
+    }
 
-    @Getter(Forecast.getCountForecastData)
-    countForecasts: number
+    get countForecasts () {
+        return Forecast.readCountForecastData(this.$store)
+    }
 
-    @Getter(Forecast.getForecastStatus)
-    forecastStatus: Forecast.RequestStatus
+    get forecastStatus () {
+        return Forecast.readForecastStatus(this.$store)
+    }
 
     get requestTimeSpent (): string {
         return `${this.timeSpent}ms`
@@ -44,11 +46,11 @@ export default class FetchDataComponent extends Vue {
     }
 
     loading () {
-        Forecast.commitForecastStatusDidStarted(this.$store)
+        Forecast.commitForecastStatusWillStart(this.$store)
     }
 
     failed () {
-        Forecast.commitForecastStatusDidFailed(this.$store)
+        Forecast.commitForecastStatusDidFail(this.$store)
         this.failedReason = ':) you just set failed'
     }
 

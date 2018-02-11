@@ -1,19 +1,29 @@
 <template>
     <div>
-        <h1>Hello, world!</h1>
-        <p>Welcome to your new single-page application, built with:</p>
+        <p>The base type is 1.6rem (16px) over 1.6 line height (24px)</p>
+        <a>Anchor</a>
+        <em>Emphasis</em>
+        <small>Small</small>
+        <strong>Strong</strong>
+        <p>asdasdsadasdsadasd asdasdasasd</p>
         <ul>
-            <li><a href="https://get.asp.net/">ASP.NET Core</a> and <a href="https://msdn.microsoft.com/en-us/library/67ef8sbd.aspx">C#</a> for cross-platform server-side code</li>
-            <li><a href="https://vuejs.org/">Vue.js</a> and <a href="http://www.typescriptlang.org/">TypeScript</a> for client-side code</li>
-            <li><a href="https://webpack.github.io/">Webpack</a> for building and bundling client-side resources</li>
-            <li><a href="http://getbootstrap.com/">Bootstrap</a> for layout and styling</li>
-        </ul>
-        <p>To help you get started, we've also set up:</p>
-        <ul>
-            <li><strong>Client-side navigation</strong>. For example, click <em>Counter</em> then <em>Back</em> to return here.</li>
-            <li><strong>Webpack dev middleware</strong>. In development mode, there's no need to run the <code>webpack</code> build tool. Your client-side resources are dynamically built on demand. Updates are available as soon as you modify any file.</li>
-            <li><strong>Hot module replacement</strong>. In development mode, you don't even need to reload the page after making most changes. Within seconds of saving changes to files, your Vue app will be rebuilt and a new instance injected is into the page.</li>
-            <li><strong>Efficient production builds</strong>. In production mode, development-time features are disabled, and the <code>webpack</code> build tool produces minified static CSS and JavaScript files.</li>
-        </ul>
+            <li>Unordered list item 1</li>
+            <li>Unordered list item 2</li>
+            </ul>
+
+
+            <ol>
+            <li>Ordered list item 1</li>
+            <li>Ordered list item 2</li>
+            </ol>
+
+
+            <dl>
+            <dt>Description list item 1</dt>
+            <dd>Description list item 1.1</dd>
+            </dl>
+        <a class="button" href="#">Default Button</a>
+        <button class="button button-outline">Outlined Button</button>
+        <input class="button button-clear" type="submit" value="Clear Button">
     </div>
 </template>

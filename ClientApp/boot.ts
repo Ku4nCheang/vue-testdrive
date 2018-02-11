@@ -1,11 +1,9 @@
-import 'isomorphic-fetch' // Allow ie11 to use fetch
 import './static/site.css'
-import 'bootstrap'
 import Vue from 'vue'
 import './hooks' // This must be imported before any component
-import Directives from './directives'
 
-Vue.use(Directives)
+Vue.use(require('./directives').default)
+Vue.use(require('./components').default)
 
 /* tslint:disable-next-line:no-unused-expression */
 new Vue({

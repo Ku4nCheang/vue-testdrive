@@ -3,6 +3,6 @@ import Vue from 'vue'
 
 export default {
     install: () => {
-        Vue.directive('focus', require('./focus').default)
+        Vue.component('navmenu', require('./navmenu/navmenu.vue').default)
     }
 }

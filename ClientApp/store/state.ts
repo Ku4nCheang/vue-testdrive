@@ -1,6 +1,23 @@
-import { ForecastState } from './modules/forecast'
-
 // Root state of the store
 export default interface State {
     forecast: ForecastState
+}
+
+export interface WeatherForecast {
+    dateFormatted: string
+    temperatureC: number
+    temperatureF: number
+    summary: string
+}
+
+export interface RequestStatus {
+    loading: boolean,
+    failed: boolean,
+    received: boolean
+}
+
+export interface ForecastState {
+    // Define properties
+    forecastStatus: RequestStatus
+    forecastData: WeatherForecast[]
 }
