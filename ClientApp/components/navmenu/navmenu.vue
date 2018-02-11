@@ -1,37 +1,22 @@
 <template>
-    <div class="main-nav">
-        <div class="navbar navbar-inverse">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="/">netcore</a>
-            </div>
-            <div class="clearfix"></div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <router-link to="/" :exact="true">
-                            <span class="glyphicon glyphicon-home"></span> Home
-                        </router-link>
-                    </li>
-                    <li>
-                        <router-link to="/counter">
-                            <span class="glyphicon glyphicon-education"></span> Counter
-                        </router-link>
-                    </li>
-                    <li>
-                        <router-link to="/fetchdata">
-                            <span class="glyphicon glyphicon-th-list"></span> Fetch data
-                        </router-link>
-                    </li>
-                </ul>
-            </div>
-        </div>
+    <div class="pure-menu pure-p doc">
+        <span class="pure-menu-heading">Template</span>
+
+        <ul class="pure-menu-list">
+            <li class="pure-menu-item">
+                <router-link to="/" class="pure-menu-link">home</router-link>
+            </li>
+            <li class="pure-menu-item">
+                <router-link to="/fetchdata" class="pure-menu-link">fetchdata</router-link>
+            </li>
+        </ul>
     </div>
 </template>
 
-<style src="./navmenu.css" />
+<style>
+    .pure-menu.doc {
+        color: white;
+        background: black;
+    }
+</style>
+

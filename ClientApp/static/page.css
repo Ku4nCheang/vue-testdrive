@@ -1,0 +1,12 @@
+.pure-p {
+    height: 100%;
+    overflow: hidden;
+}
+
+.pure-p.pure-p-x {
+    overflow-x: auto;
+}
+
+.pure-p.pure-p-y {
+    overflow-y: auto;
+}

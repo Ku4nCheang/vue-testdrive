@@ -124,6 +124,14 @@ const actions = {
 // Compose state, getters, actions and mutations as a store
 /* ---------------------------------------------------------------- */
 
+// fixed the ie problem: https://github.com/istrib/vuex-typescript/issues/13
+const vset = [getters, actions, mutations]
+vset.forEach((actions: any) => {
+    Object.keys(actions).forEach((key) => {
+        actions[key]['_vuexKey'] = key
+    })
+})
+
 export const store = {
     namespaced: true,
     state,

@@ -15,9 +15,9 @@ module.exports = (env) => {
             vendor: [
                 // uncomment following to support IE11
                 // 'event-source-polyfill',
-                // 'babel-polyfill',
-                // 'isomorphic-fetch',
-                'milligram/dist/milligram.css',
+                'babel-polyfill',
+                'isomorphic-fetch',
+                'purecss/build/pure.css',
                 'vue',
                 'vue-router',
                 'vuex',

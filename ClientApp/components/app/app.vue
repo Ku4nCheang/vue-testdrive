@@ -1,13 +1,12 @@
 <template>
-    <div id='app-root' class="container-fluid">
-        <div class="row">
-            <div class="col-sm-3">
-                <navmenu />
-            </div>
-            <div class="col-sm-9">
+    <div id='app-root' class="pure-p">
+        
+        <main class="pure-g pure-p">
+            <aside class="pure-u-1-6"><navmenu></navmenu></aside>
+            <div class="pure-u-5-6">
                 <router-view></router-view>
             </div>
-        </div>
+        </main>
     </div>
 </template>
 

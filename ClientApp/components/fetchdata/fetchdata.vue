@@ -1,13 +1,14 @@
 <template>
-    <div>
+    <div class="pure-pd-10">
         <h1>Weather forecast</h1>
         <p>This component demonstrates fetching data from the server.</p>
-
-        <button @click="clear">clear</button>
-        <button @click="reload">reload</button>
-        <button @click="failed">failed</button>
-        <button @click="loading">loading</button>
-        <table v-if="forecastStatus.received" class="table">
+        <div class="pure-mg-10-0">
+            <button class="pure-button" @click="clear">clear</button>
+            <button class="pure-button" @click="reload">reload</button>
+            <button class="pure-button" @click="failed">failed</button>
+            <button class="pure-button" @click="loading">loading</button>
+        </div>
+        <table v-if="forecastStatus.received" class="pure-table pure-table-bordered">
             <thead>
                 <tr>
                     <th>Date</th>
@@ -23,11 +24,9 @@
                     <td>{{ item.temperatureF }}</td>
                     <td>{{ item.summary }}</td>
                 </tr>
-            </tbody>
-            <tfoot>
                 <tr><td colspan="4">Total Count: {{countForecasts}}</td></tr>
                 <tr><td colspan="4">Time spent: {{requestTimeSpent}}</td></tr>
-            </tfoot>
+            </tbody>
         </table>
         
         <div v-if="forecastStatus.loading">

@@ -61,7 +61,7 @@
     <Exec Command="cd .. &amp;&amp; node node_modules/webpack/bin/webpack.js" />
   </Target>
 
-  <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
+  <Target Name="PublishRunWebpack" AfterTargets="PrepareForPublish">
     <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
     <Exec Command="npm install" />
     <Exec Command="cd .. &amp;&amp; node node_modules/webpack/bin/webpack.js --config webpack.config.vendor.js --env.prod" />
