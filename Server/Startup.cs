@@ -21,6 +21,7 @@ using Microsoft.Net.Http.Headers;
 using netcore.Core.Authentications;
 using netcore.Core.Configurations;
 using netcore.Core.Utilities;
+using netcore.Core.Extensions;
 using netcore.Models.Contexts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -38,96 +39,49 @@ namespace netcore
             configuration.Bind(_AppSettings);
         }
 
-        public bool IsDevelopment { get; }
         private AppSettings _AppSettings { get; set; }
         private IHostingEnvironment _Env { get; set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //
-            // ─── CONFIGURATION ───────────────────────────────────────────────
-            //
-
+            // add settings configuration that allow to access by service injection
             services.AddSingleton<AppSettings>(_AppSettings);
-
-
-            //
-            // ─── DATA STORE SERVICES ─────────────────────────────────────────
-            //
-
             // non-distributed memory cache
-            services.AddMemoryCache();
-            // addd redis distributed cache
-            // services.AddDistributedRedisCache((opts) => {
-            //     opts.ConnectionString = RootConfig.DB.Redis;
-            //     opts.Database = 1;
-            // });
-
-            if (!this.IsDevelopment)
-            {
-                // Using sql server database
-                services.AddDbContext<ApplicationContext>(options => {
-                    options.UseSqlServer(_AppSettings.Database.SQLServer);
-                    options.UseLoggerFactory(null);
-                });
-            }
-            else
-            {
-                // Using in-memory as database, good for development to
-                // reset seed data every time when you run the application
-                services.AddDbContext<ApplicationContext>(options => options.UseInMemoryDatabase("dev"));
-            }
-
-            services.AddResponseCompression(options => {
-                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "image/svg+xml" });
-            });
+            services.AddDatabase(_AppSettings.Database)
+                    .AddMemoryCache()
+                    .AddMapping();
 
             //
-            // ─── SERVER RELATED FEATURES ─────────────────────────────────────
+            // ─── AUTHENTICATION RELATED SERVICES ─────────────────────────────
             //
 
-            // create a jwt options snapshot for controller to create a jwt token.
-            services.Configure<JwtBearerOptions>(options => {
-                options.Audience = _AppSettings.Authenticate.JwtBearer.Audience;
-                options.ClaimsIssuer = _AppSettings.Authenticate.JwtBearer.Issuer;
-                options.TokenValidationParameters.IssuerSigningKey = JwtSecurityKey.Create(_AppSettings.Authenticate.JwtBearer.Secret);
-            });
-             // setting gzip if run on self-container
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddJwtBearer(options => {
-                        // we need a service provider to provide registered service
-                        var provider = services.BuildServiceProvider();
-                        options.TokenValidationParameters = new TokenValidationParameters{
-                            ValidateIssuer = true,
-                            ValidateAudience = true,
-                            ValidateLifetime = true,
-                            ValidateIssuerSigningKey = true,
-                            ValidIssuer = _AppSettings.Authenticate.JwtBearer.Issuer,
-                            ValidAudience = _AppSettings.Authenticate.JwtBearer.Audience,
-                            IssuerSigningKey = JwtSecurityKey.Create(_AppSettings.Authenticate.JwtBearer.Secret),
-                            RequireExpirationTime = false,
-                            SaveSigninToken = true,
-                            LifetimeValidator = new CustomLifetimeValidator(provider).ValidateAsync
-                        };
+            services
+                .AddUserIdentity(_AppSettings.Authenticate.Identity)
+                .AddJwtBearer(_AppSettings.Authenticate.JwtBearer);
+
+            //
+            // ─── SERVER RELATED SERVICE ──────────────────────────────────────
+            //
+
+            if (_AppSettings.Server.UseGZip) 
+            {
+                // setting gzip if use gzip
+                services
+                    .Configure<GzipCompressionProviderOptions>(options => {
+                        options.Level = CompressionLevel.Optimal;
+                    })
+                    .AddResponseCompression(options => {
+                        options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "image/svg+xml" });
                     });
-
-            // setting gzip if run on self-container
-            services.Configure<GzipCompressionProviderOptions>(options => {
-                options.Level = CompressionLevel.Optimal;
-            });
-            services.AddResponseCompression(options => {
-                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "image/svg+xml" });
-            });
-            
-            if (!_Env.IsDevelopment() && _AppSettings.Server.UseHttps) {
-                // enforcing ssl using https
-                services.Configure<MvcOptions>(options => {
-                    options.Filters.Add(new RequireHttpsAttribute());
-                });
             }
 
             services
+                .Configure<MvcOptions>(options => {
+                    // enforce https in production environment
+                    if (!_Env.IsDevelopment() && _AppSettings.Server.UseHttps) 
+                        options.Filters.Add(new RequireHttpsAttribute());
+                })
                 .AddMvc()
                 .AddJsonOptions(options => {
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -151,6 +105,7 @@ namespace netcore
                 // hot reload for webpack
                 // since wwwroot is place outside the server, we need to set project path
                 app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
                 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
                     HotModuleReplacement = true,
                     ProjectPath = Directory.GetParent(_Env.ContentRootPath).FullName
@@ -159,11 +114,12 @@ namespace netcore
             else if (_AppSettings.Server.UseHttps)
             {
                 // add url rewriter to make sure only access server via https if use https
-                var options = new RewriteOptions().AddRedirectToHttps();
-                app.UseRewriter(options);
+                app.UseRewriter( new RewriteOptions().AddRedirectToHttps());
             }
 
-            app.UseResponseCompression();
+            if (_AppSettings.Server.UseGZip) {
+                app.UseResponseCompression();
+            }
             // update web root file provider in order to allow append file version for tag helper.
             var webRootPath = _Env.IsDevelopment() ? Directory.GetParent(_Env.ContentRootPath).FullName : _Env.ContentRootPath;
             var provider = new PhysicalFileProvider(Path.Combine(webRootPath, "wwwroot"));

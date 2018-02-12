@@ -14,24 +14,25 @@
   <!-- Override the copying default content items -->
   <!-- default copy will copy all the json file into publish folder but we dont want these files to be copied -->
   <ItemGroup>
-    <SettingsFile Include="Resources\$(Environment)\*.*"/>
-    <FixturesFile Include="Resources\Fixtures\*.*"/>
+    <SettingsFile Include="Resources\$(Environment)\*.*" />
+    <FixturesFile Include="Resources\Fixtures\*.*" />
     <DistFiles Include="..\wwwroot\**\*.*" />
     <ViewsFiles Include="Views\**\*.*" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="6.2.2" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="3.2.0" />
+    <PackageReference Include="AutoMapper" Version="6.2.2" />
     <PackageReference Include="EntityFrameworkCore.Triggers" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
-    <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0-*" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="2.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-*" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.1" PrivateAssets="All" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Packaging.Tools.Trimming" Version="1.1.0-*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Packaging.Tools.Trimming" Version="1.1.0-*" PrivateAssets="All" />
+    <PackageReference Include="Serilog.Extensions.Logging.File" Version="2.0.0-*" />
     <PackageReference Include="StackExchange.Redis.StrongName" Version="1.2.7-*" />
   </ItemGroup>
 
