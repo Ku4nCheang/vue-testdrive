@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using netcore.Models;
 using netcore.Models.Mappings;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace netcore.Core.Extensions
 {
@@ -30,13 +32,14 @@ namespace netcore.Core.Extensions
         public static IServiceCollection AddDatabase(this IServiceCollection services, DatabaseSettings settings)
         {
             // Using sql server database
-            services.AddDbContext<ApplicationContext>(options => {
+            services.AddDbContext<ApplicationContext>(options =>
+            {
                 if (!settings.UseInMemory)
                 {
                     options.UseSqlServer(settings.SQLServer);
                     options.UseLoggerFactory(null);
                 }
-                else 
+                else
                 {
                     // Using in-memory as database, good for development to
                     // reset seed data every time when you run the application
@@ -68,66 +71,70 @@ namespace netcore.Core.Extensions
             return services;
         }
 
-        public static IServiceCollection AddUserIdentity(this IServiceCollection services, IdentitySettings settings) 
+        public static IServiceCollection AddUserIdentity(this IServiceCollection services, IdentitySettings settings)
         {
             var password = settings.Password;
             var user = settings.User;
             var lockout = settings.Lockout;
 
-            services.Configure<IdentityOptions>(options =>
-            {
-                // Password settings
-                options.Password.RequireDigit = password.RequireDigit;
-                options.Password.RequiredLength = password.RequiredLength;
-                options.Password.RequireNonAlphanumeric = password.RequireNonAlphanumeric;
-                options.Password.RequireUppercase = password.RequireUppercase;
-                options.Password.RequireLowercase = password.RequireLowercase;
-                options.Password.RequiredUniqueChars = password.RequiredUniqueChars;
+            services
+                .AddIdentity<User, UserRole>(options =>
+                {
+                    // Password settings
+                    options.Password.RequireDigit = password.RequireDigit;
+                    options.Password.RequiredLength = password.RequiredLength;
+                    options.Password.RequireNonAlphanumeric = password.RequireNonAlphanumeric;
+                    options.Password.RequireUppercase = password.RequireUppercase;
+                    options.Password.RequireLowercase = password.RequireLowercase;
+                    options.Password.RequiredUniqueChars = password.RequiredUniqueChars;
 
-                // Lockout settings
-                options.Lockout.DefaultLockoutTimeSpan = lockout.DefaultLockoutTimeSpan;
-                options.Lockout.MaxFailedAccessAttempts = lockout.MaxFailedAccessAttempts;
-                options.Lockout.AllowedForNewUsers = lockout.AllowedForNewUsers;
+                    // Lockout settings
+                    options.Lockout.DefaultLockoutTimeSpan = lockout.DefaultLockoutTimeSpan;
+                    options.Lockout.MaxFailedAccessAttempts = lockout.MaxFailedAccessAttempts;
+                    options.Lockout.AllowedForNewUsers = lockout.AllowedForNewUsers;
 
-                // User settings
-                options.User.RequireUniqueEmail = user.RequireUniqueEmail;
-            });
-
-            services.AddIdentity<User, UserRole>()
+                    // User settings
+                    options.User.RequireUniqueEmail = user.RequireUniqueEmail;
+                })
                 .AddEntityFrameworkStores<ApplicationContext>()
                 .AddDefaultTokenProviders();
 
             return services;
         }
 
-        public static IServiceCollection AddJwtBearer(this IServiceCollection services, JwtBearerSettings settings) 
+        public static IServiceCollection AddJwtBearer(this IServiceCollection services, JwtBearerSettings settings)
         {
-            // create a jwt options snapshot for controller to create a jwt token.
-            services.Configure<JwtBearerOptions>(options => {
-                options.Audience = settings.Audience;
-                options.ClaimsIssuer = settings.Issuer;
-                options.TokenValidationParameters.IssuerSigningKey = JwtSecurityKey.Create(settings.Secret);
-            });
-             // setting gzip if run on self-container
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddJwtBearer(options => {
-                        // we need a service provider to provide registered service
-                        var provider = services.BuildServiceProvider();
-                        options.TokenValidationParameters = new TokenValidationParameters{
-                            ValidateIssuer = true,
-                            ValidateAudience = true,
-                            ValidateLifetime = true,
-                            ValidateIssuerSigningKey = true,
-                            ValidIssuer = settings.Issuer,
-                            ValidAudience = settings.Audience,
-                            IssuerSigningKey = JwtSecurityKey.Create(settings.Secret),
-                            RequireExpirationTime = true,
-                            SaveSigninToken = true,
-                            // LifetimeValidator = new CustomLifetimeValidator(provider).ValidateAsync
-                        };
-                    });
+            services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    // we need a service provider to provide registered service
+                    var provider = services.BuildServiceProvider();
+                    options.Audience = settings.Audience;
+                    options.ClaimsIssuer = settings.Issuer;
+                    options.Events = new JwtBearerEvents() {
+                        OnAuthenticationFailed = ctx => {
+                            ctx.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                            return Task.FromResult(0);
+                        }
+                    };
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = settings.Issuer,
+                        ValidAudience = settings.Audience,
+                        IssuerSigningKey = JwtSecurityKey.Create(settings.Secret),
+                        RequireExpirationTime = true,
+                        SaveSigninToken = true,
+                        // LifetimeValidator = new CustomLifetimeValidator(provider).ValidateAsync
+                    };
+                });
 
-            services.AddCors(options => {
+            services.AddCors(options =>
+            {
                 options.AddPolicy("CorsPolicy",
                     builder => builder.AllowAnyOrigin()
                         .AllowAnyMethod()
@@ -146,14 +153,14 @@ namespace netcore.Core.Extensions
             return services;
         }
 
-         public static IServiceCollection AddFixture(this IServiceCollection services)
+        public static IServiceCollection AddFixture(this IServiceCollection services)
         {
             // services.AddTransient<Seed>();
             return services;
         }
 
         public static IServiceCollection AddMapping(this IServiceCollection services)
-        {   
+        {
             services.AddAutoMapper();
             services.AddSingleton<UserProfile>();
             // services.AddSingleton<FunctionProfile>();

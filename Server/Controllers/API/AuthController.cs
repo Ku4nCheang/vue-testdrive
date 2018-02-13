@@ -20,22 +20,24 @@ using System.Security.Claims;
 using netcore.Core.Constants;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
+using netcore.Core.Configurations;
+using netcore.Core.Utilities;
 
 namespace netcore.Controllers
 {
     [Route("api/v1/[controller]")]
     public class AuthController : ApiController<AuthController>
     {
-        public AuthController(IServiceProvider serviceProvider, UserManager<User> userManager, IOptionsSnapshot<JwtBearerOptions> jwtBearerSnapshot) :
+        public AuthController(IServiceProvider serviceProvider, UserManager<User> userManager, AppSettings appSettings) :
             base(serviceProvider)
         {
             UserManager = userManager;
-            JwtBearerSnapshot = jwtBearerSnapshot;
+            AppSettings = appSettings;
             ErrorDescriber = new AuthErrorDescriber();
         }
 
         protected readonly UserManager<User> UserManager;
-        protected readonly IOptionsSnapshot<JwtBearerOptions> JwtBearerSnapshot;
+        protected readonly AppSettings AppSettings;
         protected readonly AuthErrorDescriber ErrorDescriber;
 
         //
@@ -121,16 +123,9 @@ namespace netcore.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public JsonResult Logout()
         {
-            var userId = User.FindFirstValue(JwtClaimTypes.UserId);
-
-            if (string.IsNullOrEmpty(userId))
-            {
-                Logger.LogInformation(EventIds.LogoutError, $"User was not authorized to perform logout action.");
-                return this.JsonUnauthorized();
-            }
-
             // do something when logout
             // clear up something or mark user has loggout.
+            var userId = User.FindFirstValue(JwtClaimTypes.UserId);
 
             // log success message
             Logger.LogInformation(EventIds.Logout, $"User ({userId}) was logouted successfully.");
@@ -151,12 +146,12 @@ namespace netcore.Controllers
             };
             var now = DateTime.UtcNow;
             var token = new JwtSecurityToken(
-                issuer: JwtBearerSnapshot.Value.ClaimsIssuer,
-                audience: JwtBearerSnapshot.Value.Audience,
+                issuer: AppSettings.Authenticate.JwtBearer.Issuer,
+                audience: AppSettings.Authenticate.JwtBearer.Audience,
                 claims: claims,
                 notBefore: now,
                 expires: now.AddDays(30),
-                signingCredentials: new SigningCredentials(JwtBearerSnapshot.Value.TokenValidationParameters.IssuerSigningKey, SecurityAlgorithms.HmacSha256)
+                signingCredentials: new SigningCredentials(JwtSecurityKey.Create(AppSettings.Authenticate.JwtBearer.Secret), SecurityAlgorithms.HmacSha256)
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
