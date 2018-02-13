@@ -134,6 +134,7 @@ namespace netcore
                 }
             });
             app.UseAuthentication();
+            app.UseCors("CorsPolicy");
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

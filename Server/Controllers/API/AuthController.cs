@@ -16,30 +16,39 @@ using netcore.Core.Contants;
 using netcore.Core.ErrorDescribers;
 using netcore.Core.Services;
 using netcore.Models.ViewModels.SharedViewModels;
+using System.Security.Claims;
+using netcore.Core.Constants;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
 
 namespace netcore.Controllers
 {
     [Route("api/v1/[controller]")]
     public class AuthController : ApiController<AuthController>
-    {   
-        public AuthController (IServiceProvider serviceProvider, UserManager<User> userManager, IOptionsSnapshot<JwtBearerOptions> jwtBearerSnapshot):
-            base(serviceProvider) 
+    {
+        public AuthController(IServiceProvider serviceProvider, UserManager<User> userManager, IOptionsSnapshot<JwtBearerOptions> jwtBearerSnapshot) :
+            base(serviceProvider)
         {
             UserManager = userManager;
             JwtBearerSnapshot = jwtBearerSnapshot;
+            ErrorDescriber = new AuthErrorDescriber();
         }
 
         protected readonly UserManager<User> UserManager;
         protected readonly IOptionsSnapshot<JwtBearerOptions> JwtBearerSnapshot;
+        protected readonly AuthErrorDescriber ErrorDescriber;
 
         //
-        // POST: /Account/Register
+        // ─── REGISTER API ────────────────────────────────────────────────
+        //
+
         [HttpPost("register")]
         [AllowAnonymous]
         public async Task<JsonResult> Register([FromBody]RegisterViewModel model)
         {
-            if (!ModelState.IsValid) {
-                Logger.LogWarning(EventIds.RegisterError, "Registration was aborted since invalid model state.");
+            if (!ModelState.IsValid)
+            {
+                Logger.LogInformation(EventIds.Register, "Registration was aborted since invalid data.");
                 return this.JsonInvalidModelState(ModelState);
             }
 
@@ -52,18 +61,105 @@ namespace netcore.Controllers
                 return this.JsonError(errors.FirstOrDefault());
             }
 
-            // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
-            // Send an email with this link
-            //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            //var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-            //await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
-            //    "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
-            // await _signInManager.SignInAsync(user, isPersistent: false);
-            // _logger.LogInformation(3, "User created a new account with password.");
-            // return RedirectToAction(nameof(HomeController.Index), "Home");
-            
-            Logger.LogInformation(EventIds.Register, $"User ({user.Email}) has been created");
-            return this.JsonSuccess(Mapper.Map<UserViewModel>(user));
+            // log success message
+            Logger.LogInformation(EventIds.Register, $"User ({user.Email}) has been created.");
+            // return sucess response
+            return this.JsonSuccess(new
+            {
+                Token = _BuildJwtBearerToken(user),
+                User = Mapper.Map<UserViewModel>(user)
+            });
+        }
+
+        //
+        // ─── LOGIN API ───────────────────────────────────────────────────
+        //
+
+        [HttpPost("login")]
+        [AllowAnonymous]
+        public async Task<JsonResult> Login([FromBody]LoginViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                Logger.LogInformation(EventIds.Login, "Login was aborted since invalid data.");
+                return this.JsonInvalidModelState(ModelState);
+            }
+
+            // checking user existent
+            var user = await UserManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
+            {
+                Logger.LogWarning(EventIds.LoginError, $"User was not found by email ({model.Email}).");
+                return this.JsonError(ErrorDescriber.UserNotFound());
+            }
+
+            // checking user password
+            var isValidPassword = await UserManager.CheckPasswordAsync(user, model.Password);
+
+            if (!isValidPassword)
+            {
+                return this.JsonError(ErrorDescriber.IncorrectPassword());
+            }
+
+            // log success message
+            Logger.LogInformation(EventIds.Login, $"User ({user.Email}) was logon successfully.");
+            // return sucess response
+            return this.JsonSuccess(new
+            {
+                Token = _BuildJwtBearerToken(user),
+                User = Mapper.Map<UserViewModel>(user)
+            });
+        }
+
+        //
+        // ─── LOGOUT API ──────────────────────────────────────────────────
+        //
+
+        [HttpGet("logout")]
+        // make sure the authorization schema is using jwt bearer, otherwise cookie authentication will be used.
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public JsonResult Logout()
+        {
+            var userId = User.FindFirstValue(JwtClaimTypes.UserId);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                Logger.LogInformation(EventIds.LogoutError, $"User was not authorized to perform logout action.");
+                return this.JsonUnauthorized();
+            }
+
+            // do something when logout
+            // clear up something or mark user has loggout.
+
+            // log success message
+            Logger.LogInformation(EventIds.Logout, $"User ({userId}) was logouted successfully.");
+            // return sucess response
+            return this.JsonAccepted(new { });
+        }
+
+        //
+        // ─── PRIVATE METHODS ─────────────────────────────────────────────
+        //
+
+        private string _BuildJwtBearerToken(User user)
+        {
+            // create a user identity for jwt bearer
+            var claims = new List<Claim> {
+                new Claim(JwtClaimTypes.UserName, user.UserName),
+                new Claim(JwtClaimTypes.UserId, user.Id)
+            };
+            var now = DateTime.UtcNow;
+            var token = new JwtSecurityToken(
+                issuer: JwtBearerSnapshot.Value.ClaimsIssuer,
+                audience: JwtBearerSnapshot.Value.Audience,
+                claims: claims,
+                notBefore: now,
+                expires: now.AddDays(30),
+                signingCredentials: new SigningCredentials(JwtBearerSnapshot.Value.TokenValidationParameters.IssuerSigningKey, SecurityAlgorithms.HmacSha256)
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

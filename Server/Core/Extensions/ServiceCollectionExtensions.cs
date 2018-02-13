@@ -93,7 +93,7 @@ namespace netcore.Core.Extensions
                 options.User.RequireUniqueEmail = user.RequireUniqueEmail;
             });
 
-            services.AddIdentity<User, IdentityRole>()
+            services.AddIdentity<User, UserRole>()
                 .AddEntityFrameworkStores<ApplicationContext>()
                 .AddDefaultTokenProviders();
 
@@ -121,11 +121,20 @@ namespace netcore.Core.Extensions
                             ValidIssuer = settings.Issuer,
                             ValidAudience = settings.Audience,
                             IssuerSigningKey = JwtSecurityKey.Create(settings.Secret),
-                            RequireExpirationTime = false,
+                            RequireExpirationTime = true,
                             SaveSigninToken = true,
-                            LifetimeValidator = new CustomLifetimeValidator(provider).ValidateAsync
+                            // LifetimeValidator = new CustomLifetimeValidator(provider).ValidateAsync
                         };
                     });
+
+            services.AddCors(options => {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials()
+                        .Build());
+            });
 
             return services;
         }
