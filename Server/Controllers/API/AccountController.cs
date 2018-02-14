@@ -1,34 +1,36 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using netcore.Models;
-using netcore.Core.Extensions;
-using netcore.Models.ViewModels.AuthViewModels;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Logging;
-using netcore.Core.Contants;
-using netcore.Core.ErrorDescribers;
-using netcore.Core.Services;
-using netcore.Models.ViewModels.SharedViewModels;
-using System.Security.Claims;
-using netcore.Core.Constants;
-using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using netcore.Core.Configurations;
+using netcore.Core.Constants;
+using netcore.Core.Contants;
+using netcore.Core.ErrorDescribers;
+using netcore.Core.Extensions;
+using netcore.Core.Services;
 using netcore.Core.Utilities;
+using netcore.Models;
+using netcore.Models.ViewModels.AccountViewModels;
+using netcore.Models.ViewModels.SharedViewModels;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace netcore.Controllers
 {
+    // make sure the authorization schema is using jwt bearer, otherwise cookie authentication will be used.
     [Route("api/v1/[controller]")]
-    public class AuthController : ApiController<AuthController>
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public class AccountController : ApiController<AccountController>
     {
-        public AuthController(IServiceProvider serviceProvider, UserManager<User> userManager, AppSettings appSettings) :
+        public AccountController(IServiceProvider serviceProvider, UserManager<User> userManager, AppSettings appSettings) :
             base(serviceProvider)
         {
             UserManager = userManager;
@@ -54,8 +56,22 @@ namespace netcore.Controllers
                 return this.JsonInvalidModelState(ModelState);
             }
 
-            var user = new User { UserName = model.Email, Email = model.Email };
-            var result = await UserManager.CreateAsync(user, model.Password);
+            // prepare user information
+            var utcNow = DateTimeOffset.UtcNow;
+            var username = $"{AppSettings.Server.Node}{utcNow.ToUnixTimeMilliseconds().ToString()}";
+            var password = model.Password?? Helpers.EncodeToHashId((int) utcNow.ToUnixTimeSeconds(), Convert.ToInt16(AppSettings.Server.Node));
+
+            var user = new User { 
+                UserName = username, 
+                Email = model.Email,
+                JoinedAt = utcNow.UtcDateTime,
+                DateOfBirth = model.DateOfBirth,
+                Grade = model.Grade,
+                DisplayName = model.DisplayName,
+                Gender = model.Gender
+            };
+
+            var result = await UserManager.CreateAsync(user, password);
 
             if (!result.Succeeded)
             {
@@ -68,6 +84,7 @@ namespace netcore.Controllers
             // return sucess response
             return this.JsonSuccess(new
             {
+                Password = password,
                 Token = _BuildJwtBearerToken(user),
                 User = Mapper.Map<UserViewModel>(user)
             });
@@ -88,11 +105,12 @@ namespace netcore.Controllers
             }
 
             // checking user existent
-            var user = await UserManager.FindByEmailAsync(model.Email);
+            var usernameAcc = await UserManager.FindByNameAsync(model.UserNameOrEmail);
+            var user = usernameAcc?? await UserManager.FindByEmailAsync(model.UserNameOrEmail);
 
             if (user == null)
             {
-                Logger.LogWarning(EventIds.LoginError, $"User was not found by email ({model.Email}).");
+                Logger.LogWarning(EventIds.LoginError, $"User was not found with an username or email: ({model.UserNameOrEmail}).");
                 return this.JsonError(ErrorDescriber.UserNotFound());
             }
 
@@ -105,7 +123,7 @@ namespace netcore.Controllers
             }
 
             // log success message
-            Logger.LogInformation(EventIds.Login, $"User ({user.Email}) was logon successfully.");
+            Logger.LogInformation(EventIds.Login, $"User ({user.Id}) was logon successfully.");
             // return sucess response
             return this.JsonSuccess(new
             {
@@ -119,13 +137,11 @@ namespace netcore.Controllers
         //
 
         [HttpGet("logout")]
-        // make sure the authorization schema is using jwt bearer, otherwise cookie authentication will be used.
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public JsonResult Logout()
         {
             // do something when logout
             // clear up something or mark user has loggout.
-            var userId = User.FindFirstValue(JwtClaimTypes.UserId);
+            var userId = User.FindFirstValue(JwtClaimTypes.Id);
 
             // log success message
             Logger.LogInformation(EventIds.Logout, $"User ({userId}) was logouted successfully.");
@@ -133,16 +149,55 @@ namespace netcore.Controllers
             return this.JsonAccepted(new { });
         }
 
+
+
+        //
+        // ─── CHANGE PASSWORD API ─────────────────────────────────────────
+        //
+
+        [HttpPost("changepwd")]
+        public async Task<JsonResult> ChangePWD([FromBody]ChangePwdViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                Logger.LogInformation(EventIds.ChangePasswordError, "Change password action was aborted since invalid data.");
+                return this.JsonInvalidModelState(ModelState);
+            }
+
+            var user = await _CurrentUserAsync();
+            var result = await UserManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.TransformIdentityErrors();
+                return this.JsonError(errors.FirstOrDefault());
+            }
+
+            // log success message
+            Logger.LogInformation(EventIds.ChangePassword, $"User ({user.Id}) has changed a new password successfully.");
+            // return sucess response
+            return this.JsonAccepted(new { });
+        }
+
+
         //
         // ─── PRIVATE METHODS ─────────────────────────────────────────────
         //
+
+        private async Task<User> _CurrentUserAsync()
+        {
+            var userId = User.FindFirstValue(JwtClaimTypes.Id);
+            var user = await UserManager.FindByIdAsync(userId);
+            return user;
+        }
 
         private string _BuildJwtBearerToken(User user)
         {
             // create a user identity for jwt bearer
             var claims = new List<Claim> {
                 new Claim(JwtClaimTypes.UserName, user.UserName),
-                new Claim(JwtClaimTypes.UserId, user.Id)
+                new Claim(JwtClaimTypes.Id, user.Id),
+                new Claim(JwtClaimTypes.Email, user.Email)
             };
             var now = DateTime.UtcNow;
             var token = new JwtSecurityToken(

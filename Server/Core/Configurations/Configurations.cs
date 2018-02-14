@@ -12,6 +12,7 @@ namespace netcore.Core.Configurations
 
     public class ServerSettings
     {
+        public string Node { get; set; }
         public int Port { get; set; }
         public int SSLPort { get; set; }
         public bool UseHttps { get; set; } = false;
