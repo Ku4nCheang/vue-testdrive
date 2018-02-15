@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace netcore.Models.Contexts
 {
 
-    public class ApplicationContext: IdentityDbContext<User>
+    public class ApplicationContext: IdentityDbContext<User, UserRole, string>
     {
         // public virtual DbSet<User> Users { get; set; }
         // public virtual DbSet<UserState> UserStates { get; set; }

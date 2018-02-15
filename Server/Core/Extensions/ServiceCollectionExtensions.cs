@@ -18,6 +18,7 @@ using netcore.Models;
 using netcore.Models.Mappings;
 using System.Net;
 using System.Threading.Tasks;
+using netcore.Core.Repositories;
 
 namespace netcore.Core.Extensions
 {
@@ -148,14 +149,13 @@ namespace netcore.Core.Extensions
 
         public static IServiceCollection AddRepository(this IServiceCollection services)
         {
-            // services.AddScoped<IUserRepository, UserRepository>();
-            // services.AddScoped<ICacheRepository, CacheRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
             return services;
         }
 
         public static IServiceCollection AddFixture(this IServiceCollection services)
         {
-            // services.AddTransient<Seed>();
+            services.AddTransient<Seed>();
             return services;
         }
 
@@ -163,7 +163,6 @@ namespace netcore.Core.Extensions
         {
             services.AddAutoMapper();
             services.AddSingleton<UserProfile>();
-            // services.AddSingleton<FunctionProfile>();
             return services;
         }
     }

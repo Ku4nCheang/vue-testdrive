@@ -23,23 +23,18 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace netcore.Controllers
+namespace netcore.Controllers.API
 {
     // make sure the authorization schema is using jwt bearer, otherwise cookie authentication will be used.
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/account")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class AccountController : ApiController<AccountController>
+    public class AccountApiController : ApiController<AccountApiController>
     {
-        public AccountController(IServiceProvider serviceProvider, UserManager<User> userManager, AppSettings appSettings) :
-            base(serviceProvider)
+        public AccountApiController(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            UserManager = userManager;
-            AppSettings = appSettings;
             ErrorDescriber = new AuthErrorDescriber();
         }
 
-        protected readonly UserManager<User> UserManager;
-        protected readonly AppSettings AppSettings;
         protected readonly AuthErrorDescriber ErrorDescriber;
 
         //
@@ -85,7 +80,7 @@ namespace netcore.Controllers
             return this.JsonSuccess(new
             {
                 Password = password,
-                Token = _BuildJwtBearerToken(user),
+                Token = await _BuildJwtBearerToken(user),
                 User = Mapper.Map<UserViewModel>(user)
             });
         }
@@ -127,7 +122,7 @@ namespace netcore.Controllers
             // return sucess response
             return this.JsonSuccess(new
             {
-                Token = _BuildJwtBearerToken(user),
+                Token = await _BuildJwtBearerToken(user),
                 User = Mapper.Map<UserViewModel>(user)
             });
         }
@@ -141,15 +136,13 @@ namespace netcore.Controllers
         {
             // do something when logout
             // clear up something or mark user has loggout.
-            var userId = User.FindFirstValue(JwtClaimTypes.Id);
+            var userId = User.FindFirstValue(JwtClaimTypes.Identifier);
 
             // log success message
             Logger.LogInformation(EventIds.Logout, $"User ({userId}) was logouted successfully.");
             // return sucess response
             return this.JsonAccepted(new { });
         }
-
-
 
         //
         // ─── CHANGE PASSWORD API ─────────────────────────────────────────
@@ -164,7 +157,7 @@ namespace netcore.Controllers
                 return this.JsonInvalidModelState(ModelState);
             }
 
-            var user = await _CurrentUserAsync();
+            var user = await GetCurrentUserAsync();
             var result = await UserManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
             
             if (!result.Succeeded)
@@ -179,26 +172,27 @@ namespace netcore.Controllers
             return this.JsonAccepted(new { });
         }
 
-
         //
         // ─── PRIVATE METHODS ─────────────────────────────────────────────
         //
 
-        private async Task<User> _CurrentUserAsync()
-        {
-            var userId = User.FindFirstValue(JwtClaimTypes.Id);
-            var user = await UserManager.FindByIdAsync(userId);
-            return user;
-        }
-
-        private string _BuildJwtBearerToken(User user)
+        private async Task<string> _BuildJwtBearerToken(User user)
         {
             // create a user identity for jwt bearer
+            var roles = await UserManager.GetRolesAsync(user);
+            var roleClaims = roles.Map<Claim>((role) => {
+                return new Claim(JwtClaimTypes.Role, role);
+            });
+
             var claims = new List<Claim> {
+                new Claim(JwtClaimTypes.Name, user.Id),
+                new Claim(JwtClaimTypes.Identifier, user.Id),
                 new Claim(JwtClaimTypes.UserName, user.UserName),
-                new Claim(JwtClaimTypes.Id, user.Id),
                 new Claim(JwtClaimTypes.Email, user.Email)
             };
+
+            claims.AddRange(roleClaims);
+
             var now = DateTime.UtcNow;
             var token = new JwtSecurityToken(
                 issuer: AppSettings.Authenticate.JwtBearer.Issuer,

@@ -14,5 +14,10 @@ namespace netcore.Core.Contants
         public static EventId LogoutError = new EventId(6, nameof(LogoutError));
         public static EventId ChangePassword = new EventId(7, nameof(ChangePassword));
         public static EventId ChangePasswordError = new EventId(8, nameof(ChangePasswordError));
+
+        public static EventId GetAllUsers = new EventId(100, nameof(GetAllUsers));
+        public static EventId GetAllUsersError = new EventId(101, nameof(GetAllUsersError));
+        public static EventId GetUsersAtPage = new EventId(102, nameof(GetUsersAtPage));
+        public static EventId GetUsersAtPageError = new EventId(103, nameof(GetUsersAtPageError));
     }
 }

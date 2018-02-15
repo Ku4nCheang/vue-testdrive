@@ -50,7 +50,9 @@ namespace netcore
             // non-distributed memory cache
             services.AddDatabase(_AppSettings.Database)
                     .AddMemoryCache()
-                    .AddMapping();
+                    .AddMapping()
+                    .AddRepository()
+                    .AddFixture();
 
             //
             // ─── AUTHENTICATION RELATED SERVICES ─────────────────────────────
@@ -99,6 +101,9 @@ namespace netcore
                 { "Microsoft", LogLevel.Warning },
                 { "System", LogLevel.Warning }
             });
+
+            // add fixture data
+            app.UseFixture();
 
             if (_Env.IsDevelopment())
             {
