@@ -19,6 +19,7 @@ using netcore.Models.Mappings;
 using System.Net;
 using System.Threading.Tasks;
 using netcore.Core.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace netcore.Core.Extensions
 {
@@ -129,11 +130,24 @@ namespace netcore.Core.Extensions
                         ValidAudience = settings.Audience,
                         IssuerSigningKey = JwtSecurityKey.Create(settings.Secret),
                         RequireExpirationTime = true,
-                        SaveSigninToken = true,
+                        SaveSigninToken = true
                         // LifetimeValidator = new CustomLifetimeValidator(provider).ValidateAsync
                     };
                 });
 
+            // policy requirements
+            services
+                .AddAuthorization(options =>
+                {
+                    options.AddPolicy("OwnerOrInternalUser", policy => {
+                        policy.Requirements.Add(new OwnerOrAnyRoleRequirement("SystemUser,Administrator"));
+                    });
+                    options.AddPolicy("SameUser", policy =>
+                        policy.Requirements.Add(new SameUserRequirement()));
+                })
+                .AddSingleton<IAuthorizationHandler, OwnerOrAnyRoleHandler>()
+                .AddSingleton<IAuthorizationHandler, SameUserHandler>();
+            // cross origin policy
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",

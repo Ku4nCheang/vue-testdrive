@@ -1,10 +1,11 @@
 using System;
 using System.Threading;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace netcore.Core.Repositories
 {
-    public class Repository<C>: IDisposable where C : class
+    public class Repository<C>: IDisposable where C : DbContext
     {
 
         public Repository(IServiceProvider provider)

@@ -10,14 +10,8 @@ namespace netcore.Core.Authentications
 {
     public class CustomLifetimeValidator
     {
-        public CustomLifetimeValidator(IServiceProvider provider)
-        {
-        }
-
         public bool ValidateAsync (DateTime? notBefore, DateTime? expires, SecurityToken token, TokenValidationParameters parameters)
         {
-            
-            //
             return true;
         }
     }

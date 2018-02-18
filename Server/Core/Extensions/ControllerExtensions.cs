@@ -129,7 +129,7 @@ namespace netcore.Core.Extensions
         {
             response.StatusCode = (int) HttpStatusCode.Unauthorized;
             response.Value = new {
-                Success = true,
+                Success = false,
                 ErrorCode = errorCode,
                 ErrorMessage = errorMessage 
             };

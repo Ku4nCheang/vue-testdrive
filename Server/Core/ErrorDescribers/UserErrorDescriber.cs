@@ -5,5 +5,15 @@ namespace netcore.Core.ErrorDescribers
         public UserErrorDescriber() 
         {
         }
+
+        public Error UnauthorizedUserAccess() 
+        {
+            return new Error() { Code = nameof(UnauthorizedUserAccess), Description = $"Unauthorizred user access." };
+        }
+
+        public Error UserNotFound() 
+        {
+            return new Error() { Code = nameof(UserNotFound), Description = $"User not found." };
+        }
     }
 }

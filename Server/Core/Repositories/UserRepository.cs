@@ -76,7 +76,7 @@ namespace netcore.Core.Repositories
             {
                 Logger.LogError(EventIds.GetUsersAtPageError, ex, $"Could not retrieve users for page ({page}) from persistent store.");
             }
-
+            
             return null;
         }
 

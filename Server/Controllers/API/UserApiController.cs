@@ -48,8 +48,7 @@ namespace netcore.Controllers.API
         [Authorize(Roles="SystemUser,Administrator")]
         public async Task<JsonResult> GetUsers(int count = 30, int page = 1)
         {
-            var u = User;
-            var u1 = await UserManager.GetUserAsync(User);
+            page = (page < 1)? 1 : page;
             var users = await UserRepository.GetAllUsersAsync();
             var usersDTO = Mapper.Map<List<UserViewModel>>(users);
             // return sucess response
@@ -57,6 +56,25 @@ namespace netcore.Controllers.API
                 Data = usersDTO,
                 Total = await UserRepository.CountUsersAsync()
             });
+        }
+
+        //
+        // ─── GET USER API ────────────────────────────────────────────────
+        //
+
+        [HttpGet("{id}")]
+        [Authorize(Policy="OwnerOrInternalUser", AuthenticationSchemes=JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<JsonResult> GetUser(string id)
+        {
+            var user = await UserManager.FindByIdAsync(id);
+
+            // return 404 if user not found
+            if (user == null)
+                return this.JsonNotFound(ErrorDescriber.UserNotFound());
+
+            var usersDTO = Mapper.Map<UserViewModel>(user);
+            // return sucess response
+            return this.JsonSuccess( usersDTO );
         }
     }
 }

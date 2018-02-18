@@ -49,7 +49,8 @@ namespace netcore.Models
             if (!Context.Users.Any())
             {
                 var u1 = new User() {
-                    UserName = "1123456789123413",
+                    Id = "24b764b9-e9f4-4a51-999b-908e60fad6df",
+                    UserName = "1123456789123",
                     Email = "user1@example.com",
                     DisplayName = "Test User A",
                     JoinedAt = DateTimeOffset.UtcNow.DateTime
@@ -58,7 +59,8 @@ namespace netcore.Models
                 await UserManager.AddToRoleAsync(u1, "Member");
 
                 var u2 = new User() {
-                    UserName = "1123456789123415",
+                    Id = "e1c8a09c-1417-4d84-8223-86ab3994168c",
+                    UserName = "1123456789124",
                     Email = "user2@example.com",
                     DisplayName = "Test User B",
                     JoinedAt = DateTimeOffset.UtcNow.DateTime
@@ -68,7 +70,8 @@ namespace netcore.Models
                 await UserManager.AddToRoleAsync(u2, "Member");
 
                 var u3 = new User() {
-                    UserName = "1123456789123419",
+                    Id = "6be3d01e-8884-4aea-bc66-bc252a6c25f5",
+                    UserName = "1123456789125",
                     Email = "user3@example.com",
                     DisplayName = "Test User C",
                     JoinedAt = DateTimeOffset.UtcNow.DateTime
