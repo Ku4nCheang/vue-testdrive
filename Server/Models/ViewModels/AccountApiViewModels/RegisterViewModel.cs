@@ -1,6 +1,6 @@
 using System;
 
-namespace netcore.Models.ViewModels.AccountViewModels
+namespace netcore.Models.ViewModels.AccountApiViewModels
 {
     public class RegisterViewModel
     {

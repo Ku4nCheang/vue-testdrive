@@ -19,5 +19,7 @@ namespace netcore.Core.Contants
         public static EventId GetAllUsersError = new EventId(101, nameof(GetAllUsersError));
         public static EventId GetUsersAtPage = new EventId(102, nameof(GetUsersAtPage));
         public static EventId GetUsersAtPageError = new EventId(103, nameof(GetUsersAtPageError));
+        public static EventId UpdateProfile = new EventId(104, nameof(UpdateProfile));
+        public static EventId UpdateProfileError = new EventId(105, nameof(UpdateProfileError));
     }
 }

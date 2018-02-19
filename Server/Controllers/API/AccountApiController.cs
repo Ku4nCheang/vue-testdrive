@@ -13,7 +13,7 @@ using netcore.Core.Extensions;
 using netcore.Core.Services;
 using netcore.Core.Utilities;
 using netcore.Models;
-using netcore.Models.ViewModels.AccountViewModels;
+using netcore.Models.ViewModels.AccountApiViewModels;
 using netcore.Models.ViewModels.SharedViewModels;
 using System;
 using System.Collections.Generic;

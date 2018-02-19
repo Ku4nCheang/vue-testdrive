@@ -14,8 +14,9 @@ using netcore.Core.Repositories;
 using netcore.Core.Services;
 using netcore.Core.Utilities;
 using netcore.Models;
-using netcore.Models.ViewModels.AccountViewModels;
+using netcore.Models.ViewModels.AccountApiViewModels;
 using netcore.Models.ViewModels.SharedViewModels;
+using netcore.Models.ViewModels.UserApiViewModels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -70,10 +71,79 @@ namespace netcore.Controllers.API
 
             // return 404 if user not found
             if (user == null)
-                return this.JsonNotFound(ErrorDescriber.UserNotFound());
+                return this.JsonError(ErrorDescriber.UserNotFound());
 
             var usersDTO = Mapper.Map<UserViewModel>(user);
             // return sucess response
+            return this.JsonSuccess( usersDTO );
+        }
+
+        //
+        // ─── UPDATE USER API ─────────────────────────────────────────────
+        //
+
+        [HttpPut("{id}")]
+        [Authorize(Policy="OwnerOrInternalUser", AuthenticationSchemes=JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<JsonResult> UpdateProfile(string id, [FromBody] UpdateProfileViewModel model)
+        {
+            var user = await UserManager.FindByIdAsync(id);
+
+            // return 404 if user not found
+            if (user == null)
+                return this.JsonError(ErrorDescriber.UserNotFound());
+
+            var updatedFields = new Dictionary<string, string>();
+
+            if (model.DateOfBirth != null) 
+            {
+                updatedFields.Add(nameof(user.DateOfBirth), $"({user.DateOfBirth.ToString()} ) -> ({user.DateOfBirth.ToString()})");
+                user.DateOfBirth = model.DateOfBirth;
+            }
+
+            if (model.DisplayName != null) 
+            {
+                updatedFields.Add(nameof(user.DisplayName), $"({user.DisplayName.ToString()}) -> ({model.DisplayName.ToString()})");
+                user.DisplayName = model.DisplayName;
+            }
+
+            if (model.Email != null) 
+            {
+                updatedFields.Add(nameof(user.Email), $"({user.Email.ToString()}) -> ({model.Email.ToString()})");
+                user.Email = model.Email;
+                // just set email or using usermanager to update the email via sending token to confirm changes.
+            }
+
+            if (model.PhoneNumber != null) 
+            {
+                updatedFields.Add(nameof(user.PhoneNumber), $"({user.PhoneNumber.ToString()}) -> ({model.PhoneNumber.ToString()})");
+                user.PhoneNumber = model.PhoneNumber;
+                // just set phone number or using usermanager to update the phone number via sending token to confirm changes.
+            }
+
+            if (model.Gender != null)
+            {
+                updatedFields.Add(nameof(user.Gender), $"({user.Gender.ToString()}) -> ({model.Gender.ToString()})");
+                user.Gender = model.Gender.Value;
+            }
+            
+            var result = await UserManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.TransformIdentityErrors();
+                return this.JsonError(errors.FirstOrDefault());
+            }
+
+            var values = updatedFields
+                .Select( field => $"{field.Key}: {field.Value}")
+                .ToArray();
+
+            // log the updated field value for the user
+            Logger.LogDebug(EventIds.UpdateProfile , $"Fields have changed: {String.Join(", ", values)}");
+
+            var usersDTO = Mapper.Map<UserViewModel>(user);
+            // return sucess response
+            Logger.LogInformation(EventIds.UpdateProfile , $"User ({user.Id}) profile has been updated.");
             return this.JsonSuccess( usersDTO );
         }
     }
