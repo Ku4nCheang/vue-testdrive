@@ -43,13 +43,7 @@ namespace netcore.Core.Repositories
             return null;
         }
 
-        /// <summary>
-        /// Retrieved users at specified page from persistent store.
-        /// </summary>
-        /// <param name="count">number of users that will be retrieved.</param>
-        /// <param name="page">which page of users that will be retrieved.</param>
-        /// <returns>List of users that in store.</returns>
-        public async Task<List<User>> GetUsersAsync(int count = 30, int page = 1)
+        public async Task<List<User>> GetUsersAsync(int count = 30, int page = 1, UserOrderBy orderBy = UserOrderBy.UserName, UserOrderDir dir = UserOrderDir.Ascending)
         {
             ThrowIfDisposed();
 
@@ -59,12 +53,47 @@ namespace netcore.Core.Repositories
             }
 
             var skip = (page - 1) * count;
+            var asc = Convert.ToBoolean((int)dir);
+
+            var sortedUsers = (asc) ? 
+                    Context.Users.OrderBy( u => u.UserName ) :
+                    Context.Users.OrderByDescending( u => u.UserName );
+
+            if (orderBy == UserOrderBy.DateOfBirth)
+            {
+                sortedUsers = (asc) ? 
+                    Context.Users.OrderBy( u => u.DateOfBirth ) :
+                    Context.Users.OrderByDescending( u => u.DateOfBirth );
+            }
+            else if (orderBy == UserOrderBy.Email)
+            {
+                sortedUsers = (asc) ? 
+                    Context.Users.OrderBy( u => u.Email ) :
+                    Context.Users.OrderByDescending( u => u.Email );
+            }
+            else if (orderBy == UserOrderBy.Gender)
+            {
+                sortedUsers = (asc) ? 
+                    Context.Users.OrderBy( u => u.Gender ) :
+                    Context.Users.OrderByDescending( u => u.Gender );
+            }
+            else if (orderBy == UserOrderBy.JoinedAt)
+            {
+                sortedUsers = (asc) ? 
+                    Context.Users.OrderBy( u => u.JoinedAt ) :
+                    Context.Users.OrderByDescending( u => u.JoinedAt );
+            }
+            else if (orderBy == UserOrderBy.LastName)
+            {
+                sortedUsers = (asc) ? 
+                    Context.Users.OrderBy( u => u.LastName ) :
+                    Context.Users.OrderByDescending( u => u.LastName );
+            }
 
             try
             {
-                var users = await Context.Users
+                var users = await sortedUsers
                     .Where(u => !u.Deleted)
-                    .OrderBy(u => u.UserName)
                     .Skip(skip)
                     .Take(count)
                     .AsNoTracking()

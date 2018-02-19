@@ -9,6 +9,9 @@ namespace netcore.Models
     // Add profile data for application users by adding properties to the user class
     public class User : IdentityUser
     {
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string MiddleName { get; set; }
         public DateTime JoinedAt { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public int Grade { get; set; } = 0;

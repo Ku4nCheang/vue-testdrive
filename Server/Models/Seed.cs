@@ -53,6 +53,8 @@ namespace netcore.Models
                     UserName = "1123456789123",
                     Email = "user1@example.com",
                     DisplayName = "Test User A",
+                    FirstName = "User",
+                    LastName = "A",
                     JoinedAt = DateTimeOffset.UtcNow.DateTime
                 };
                 await UserManager.CreateAsync(u1, "P@ssword");
@@ -63,6 +65,8 @@ namespace netcore.Models
                     UserName = "1123456789124",
                     Email = "user2@example.com",
                     DisplayName = "Test User B",
+                    FirstName = "User",
+                    LastName = "B",
                     JoinedAt = DateTimeOffset.UtcNow.DateTime
                 };
                 await UserManager.CreateAsync(u2, "P@ssword");
@@ -74,6 +78,8 @@ namespace netcore.Models
                     UserName = "1123456789125",
                     Email = "user3@example.com",
                     DisplayName = "Test User C",
+                    FirstName = "User",
+                    LastName = "C",
                     JoinedAt = DateTimeOffset.UtcNow.DateTime
                 };
                 await UserManager.CreateAsync(u3, "P@ssword");

@@ -47,10 +47,10 @@ namespace netcore.Controllers.API
 
         [HttpGet]
         [Authorize(Roles="SystemUser,Administrator")]
-        public async Task<JsonResult> GetUsers(int count = 30, int page = 1)
+        public async Task<JsonResult> GetUsers(int count = 30, int page = 1, UserOrderBy orderBy = UserOrderBy.UserName, UserOrderDir dir = UserOrderDir.Ascending)
         {
             page = (page < 1)? 1 : page;
-            var users = await UserRepository.GetUsersAsync(count, page);
+            var users = await UserRepository.GetUsersAsync(count, page, orderBy, dir);
             var usersDTO = Mapper.Map<List<UserViewModel>>(users);
             // return sucess response
             return this.JsonSuccess( new {
