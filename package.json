@@ -75,7 +75,8 @@
     "vuex": "^3.0.1",
     "vuex-typescript": "^3.0.2",
     "webpack": "^3.11.0",
-    "webpack-hot-middleware": "^2.21.0"
+    "webpack-hot-middleware": "^2.21.0",
+    "axios": "^0.17.1"
   },
   "scripts": {
     "test": "npm run eslint && node node_modules/karma/bin/karma start test/unit/karma.conf.js --single-run",

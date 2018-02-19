@@ -1,6 +1,7 @@
 import { getStoreAccessors } from 'vuex-typescript'
 import State, { ForecastState, WeatherForecast, RequestStatus } from '../state'
 import { ActionContext, Store } from 'vuex'
+import Axios from 'axios'
 
 /* ---------------------------------------------------------------- */
 // Declaration
@@ -17,10 +18,12 @@ type ForecastContext = ActionContext<ForecastState, State>
 // The state of the store. Define your state in this section.
 /* ---------------------------------------------------------------- */
 
-const defaultForecastStatus = {
+const defaultForecastStatus: RequestStatus = {
     loading: false,
     failed: false,
-    received: false
+    received: false,
+    errorCode: '',
+    errorMessage: ''
 }
 
 const state: ForecastState = {
@@ -106,8 +109,8 @@ const actions = {
         commitForecastStatusWillStart(context)
         // loading api to received data
         try {
-            const response = await fetch('api/SampleData/WeatherForecasts')
-            const data = await response.json() as WeatherForecast[]
+            const response = await Axios.get('api/SampleData/WeatherForecasts')
+            const data = await response.data as WeatherForecast[]
             commitForecastDataDidReceive(context, data)
             return true
         } catch (reason) {

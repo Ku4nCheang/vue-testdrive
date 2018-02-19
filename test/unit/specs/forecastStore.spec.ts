@@ -7,18 +7,19 @@ import sinonStubPromise from 'sinon-stub-promise'
 import FetchDataComponent from '@components/fetchdata/fetchdata'
 import store from '@store/index'
 import * as Forecast from '@store/modules/forecast'
-
-window.fetch = require('isomorphic-fetch')
+import Axios, { AxiosResponse } from 'axios'
 
 sinonStubPromise(sinon)
 
 const mockResponse = (body: any = {}) => {
-    return new Response(JSON.stringify(body), {
+    return {
+        data: body,
         status: 200,
-        headers: [
-            ['Content-type', 'application/json']
-        ]
-    })
+        statusText: 'OK',
+        headers: {},
+        config: {},
+        request: {}
+    } as AxiosResponse<any>
 }
 
 describe('vuex: forecast module', () => {
@@ -33,12 +34,13 @@ describe('vuex: forecast module', () => {
                 forecastStatus: {
                     loading: false,
                     failed: false,
-                    received: false
+                    received: false,
+                    errorCode: '',
+                    errorMessage: ''
                 }
             }
         })
-
-        stubFetch = sinon.stub(window, 'fetch').returns(
+        stubFetch = sinon.stub(Axios, 'get').returns(
             Promise.resolve(mockResponse([
                 {
                     dateFormatted: '11/07/2017',
@@ -66,7 +68,9 @@ describe('vuex: forecast module', () => {
         expect(store.state.forecast.forecastStatus).to.eql({
             loading: false,
             failed: false,
-            received: true
+            received: true,
+            errorCode: '',
+            errorMessage: ''
         })
     })
 
@@ -75,21 +79,27 @@ describe('vuex: forecast module', () => {
         expect(store.state.forecast.forecastStatus).to.eql({
             loading: true,
             failed: false,
-            received: false
+            received: false,
+            errorCode: '',
+            errorMessage: ''
         })
 
         Forecast.commitForecastStatusDidFail(store)
         expect(store.state.forecast.forecastStatus).to.eql({
             loading: false,
             failed: true,
-            received: false
+            received: false,
+            errorCode: '',
+            errorMessage: ''
         })
 
         Forecast.commitClear(store)
         expect(store.state.forecast.forecastStatus).to.eql({
             loading: false,
             failed: false,
-            received: false
+            received: false,
+            errorCode: '',
+            errorMessage: ''
         })
     })
 
@@ -109,7 +119,9 @@ describe('vuex: forecast module', () => {
         expect(status).to.eql({
             loading: false,
             failed: false,
-            received: true
+            received: true,
+            errorCode: '',
+            errorMessage: ''
         })
 
         const count = Forecast.readCountForecastData(store)

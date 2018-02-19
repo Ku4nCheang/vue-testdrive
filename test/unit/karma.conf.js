@@ -40,7 +40,7 @@ module.exports = function (config) {
     plugins: [
       // Launchers
       'karma-phantomjs-launcher',
-      'karma-jsdom-launcher',
+      // 'karma-jsdom-launcher',
 
       // Test Libraries
       'karma-mocha',

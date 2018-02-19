@@ -13,7 +13,9 @@ export interface WeatherForecast {
 export interface RequestStatus {
     loading: boolean,
     failed: boolean,
-    received: boolean
+    received: boolean,
+    errorCode: string,
+    errorMessage: string
 }
 
 export interface ForecastState {

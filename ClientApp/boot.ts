@@ -1,5 +1,4 @@
-import 'babel-polyfill'
-import 'isomorphic-fetch'
+// import 'babel-polyfill'
 import './static/site.css'
 import Vue from 'vue'
 import './hooks' // This must be imported before any component
