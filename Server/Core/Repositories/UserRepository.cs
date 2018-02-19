@@ -27,6 +27,7 @@ namespace netcore.Core.Repositories
             try
             {
                 var users = await Context.Users
+                    .Where(u => !u.Deleted)
                     .AsNoTracking()
                     .ToListAsync(CancellationToken);
 
@@ -62,6 +63,7 @@ namespace netcore.Core.Repositories
             try
             {
                 var users = await Context.Users
+                    .Where(u => !u.Deleted)
                     .OrderBy(u => u.UserName)
                     .Skip(skip)
                     .Take(count)
@@ -82,7 +84,7 @@ namespace netcore.Core.Repositories
 
         public Task<int> CountUsersAsync()
         {
-            return Context.Users.CountAsync();
+            return Context.Users.CountAsync( user => !user.Deleted );
         }
     }
 }

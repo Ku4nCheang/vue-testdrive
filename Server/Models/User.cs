@@ -14,5 +14,6 @@ namespace netcore.Models
         public int Grade { get; set; } = 0;
         public string DisplayName { get; set; }
         public uint Gender { get; set; } = 1;
+        public bool Deleted { get; set; } = false;
     }
 }

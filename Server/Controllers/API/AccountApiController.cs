@@ -27,7 +27,7 @@ namespace netcore.Controllers.API
 {
     // make sure the authorization schema is using jwt bearer, otherwise cookie authentication will be used.
     [Route("api/v1/account")]
-    [Authorize(AuthenticationSchemes=JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class AccountApiController : ApiController<AccountApiController>
     {
         public AccountApiController(IServiceProvider serviceProvider) : base(serviceProvider)
@@ -50,7 +50,7 @@ namespace netcore.Controllers.API
                 Logger.LogInformation(EventIds.Register, "Registration was aborted since invalid data.");
                 return this.JsonInvalidModelState(ModelState);
             }
-            
+
             var shouldRetry = false;
             User user = null;
 
@@ -59,10 +59,11 @@ namespace netcore.Controllers.API
                 // prepare user information
                 var utcNow = DateTimeOffset.UtcNow;
                 var username = utcNow.ToUnixTimeMilliseconds().ToString();
-                var password = model.Password?? Helpers.EncodeToHashId((int) utcNow.ToUnixTimeSeconds(), AppSettings.Server.Node.ToInt());
+                var password = model.Password ?? Helpers.EncodeToHashId((int)utcNow.ToUnixTimeSeconds(), AppSettings.Server.Node.ToInt());
 
-                user = new User { 
-                    UserName = username, 
+                user = new User
+                {
+                    UserName = username,
                     Email = model.Email,
                     JoinedAt = utcNow.UtcDateTime,
                     DateOfBirth = model.DateOfBirth,
@@ -70,12 +71,13 @@ namespace netcore.Controllers.API
                     DisplayName = model.DisplayName,
                     Gender = model.Gender
                 };
-                
+
                 var result = await UserManager.CreateAsync(user, password);
 
                 if (!result.Succeeded)
                 {
-                    if (result.Errors.Count() == 1 && result.Errors.FirstOrDefault().Code == nameof(IdentityErrorDescriber.DuplicateUserName)) {
+                    if (result.Errors.Count() == 1 && result.Errors.FirstOrDefault().Code == nameof(IdentityErrorDescriber.DuplicateUserName))
+                    {
 
                     }
                     var errors = result.Errors.TransformIdentityErrors();
@@ -85,12 +87,12 @@ namespace netcore.Controllers.API
                 // if error is duplicated username, we try again until created the user successfully
                 shouldRetry = result.Errors.Count() == 1 && result.Errors.FirstOrDefault().Code == nameof(IdentityErrorDescriber.DuplicateUserName);
             } while (shouldRetry);
-            
+
 
             // log success message
             Logger.LogInformation(EventIds.Register, $"User ({user?.Email}) has been created.");
             // return sucess response
-            return this.JsonSuccess(new
+            return this.JsonCreated(new
             {
                 Token = await _BuildJwtBearerToken(user),
                 User = Mapper.Map<UserViewModel>(user)
@@ -113,12 +115,17 @@ namespace netcore.Controllers.API
 
             // checking user existent
             var usernameAcc = await UserManager.FindByNameAsync(model.UserNameOrEmail);
-            var user = usernameAcc?? await UserManager.FindByEmailAsync(model.UserNameOrEmail);
+            var user = usernameAcc ?? await UserManager.FindByEmailAsync(model.UserNameOrEmail);
 
             if (user == null)
             {
                 Logger.LogWarning(EventIds.LoginError, $"User was not found with an username or email: ({model.UserNameOrEmail}).");
-                return this.JsonError(ErrorDescriber.UserNotFound());
+                return this.JsonError(ErrorDescriber.AccountNotFound());
+            }
+            else if (user.Deleted)
+            {
+                Logger.LogWarning(EventIds.LoginError, $"User ({user.Id}) was already deactivated.");
+                return this.JsonError(ErrorDescriber.AccountAlreadyDeactivated());
             }
 
             // checking user password
@@ -149,7 +156,6 @@ namespace netcore.Controllers.API
             // do something when logout
             // clear up something or mark user has loggout.
             var userId = User.FindFirstValue(JwtClaimTypes.Identifier);
-
             // log success message
             Logger.LogInformation(EventIds.Logout, $"User ({userId}) was logouted successfully.");
             // return sucess response
@@ -171,7 +177,7 @@ namespace netcore.Controllers.API
 
             var user = await GetCurrentUserAsync();
             var result = await UserManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
-            
+
             if (!result.Succeeded)
             {
                 var errors = result.Errors.TransformIdentityErrors();
@@ -192,11 +198,12 @@ namespace netcore.Controllers.API
         {
             // create a user identity for jwt bearer
             var roles = await UserManager.GetRolesAsync(user);
-            var roleClaims = roles.Map<Claim>((role) => {
+            var roleClaims = roles.Map<Claim>((role) =>
+            {
                 return new Claim(JwtClaimTypes.Role, role);
             });
 
-            
+
             var claims = new List<Claim> {
                 new Claim(JwtClaimTypes.Name, user.Id),
                 new Claim(JwtClaimTypes.Identifier, user.Id),

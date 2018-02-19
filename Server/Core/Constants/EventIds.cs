@@ -21,5 +21,7 @@ namespace netcore.Core.Contants
         public static EventId GetUsersAtPageError = new EventId(103, nameof(GetUsersAtPageError));
         public static EventId UpdateProfile = new EventId(104, nameof(UpdateProfile));
         public static EventId UpdateProfileError = new EventId(105, nameof(UpdateProfileError));
+        public static EventId DeactivateAccount = new EventId(106, nameof(DeactivateAccount));
+        public static EventId DeactivateAccountError = new EventId(107, nameof(DeactivateAccountError));
     }
 }

@@ -50,7 +50,7 @@ namespace netcore.Controllers.API
         public async Task<JsonResult> GetUsers(int count = 30, int page = 1)
         {
             page = (page < 1)? 1 : page;
-            var users = await UserRepository.GetAllUsersAsync();
+            var users = await UserRepository.GetUsersAsync(count, page);
             var usersDTO = Mapper.Map<List<UserViewModel>>(users);
             // return sucess response
             return this.JsonSuccess( new {
@@ -70,7 +70,7 @@ namespace netcore.Controllers.API
             var user = await UserManager.FindByIdAsync(id);
 
             // return 404 if user not found
-            if (user == null)
+            if (user == null || user.Deleted)
                 return this.JsonError(ErrorDescriber.UserNotFound());
 
             var usersDTO = Mapper.Map<UserViewModel>(user);
@@ -86,10 +86,16 @@ namespace netcore.Controllers.API
         [Authorize(Policy="OwnerOrInternalUser", AuthenticationSchemes=JwtBearerDefaults.AuthenticationScheme)]
         public async Task<JsonResult> UpdateProfile(string id, [FromBody] UpdateProfileViewModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                Logger.LogInformation(EventIds.UpdateProfileError, "Update profile action was aborted since invalid data.");
+                return this.JsonInvalidModelState(ModelState);
+            }
+
             var user = await UserManager.FindByIdAsync(id);
 
             // return 404 if user not found
-            if (user == null)
+            if (user == null || user.Deleted)
                 return this.JsonError(ErrorDescriber.UserNotFound());
 
             var updatedFields = new Dictionary<string, string>();
@@ -144,7 +150,54 @@ namespace netcore.Controllers.API
             var usersDTO = Mapper.Map<UserViewModel>(user);
             // return sucess response
             Logger.LogInformation(EventIds.UpdateProfile , $"User ({user.Id}) profile has been updated.");
-            return this.JsonSuccess( usersDTO );
+            return this.JsonAccepted( usersDTO );
         }
+
+        //
+        // ─── DEACTIVATE USER API ─────────────────────────────────────────
+        //
+
+        [HttpDelete("{id}")]
+        [Authorize(Policy="OwnerOrInternalUser", AuthenticationSchemes=JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<JsonResult> DeactivateUser(string id, [FromBody] DeactivateUserViewModel model)
+        {
+            var user = await UserManager.FindByIdAsync(id);
+
+            // return 404 if user not found
+            if (user == null)
+                return this.JsonError(ErrorDescriber.UserNotFound());
+            else if (user.Deleted && !model.Hard)
+                return this.JsonError(ErrorDescriber.UserAlreadyDeactivated());
+
+            IdentityResult result = null;
+
+            if (!model.Hard)
+            {
+                // set user is deleted
+                user.Deleted = true;
+                result = await UserManager.UpdateAsync(user);   
+            }
+            else
+            {
+                result = await UserManager.DeleteAsync(user);
+            }
+
+            if (result != null && result.Succeeded)
+            {
+                var message = model.Hard ? $"User ({user.Id}) has been deleted." : $"User ({user.Id}) has been deactiviated.";
+                Logger.LogInformation(EventIds.DeactivateAccount, message);
+                // return sucess response
+                return this.JsonAccepted(new {});
+            }
+
+            // no need to log warning message since usermanage has handled logging when errors occured.
+            var errors = result?.Errors.TransformIdentityErrors();
+            return this.JsonError(errors.FirstOrDefault());
+        }
+
+
+
     }
+
+
 }

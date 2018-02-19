@@ -6,9 +6,14 @@ namespace netcore.Core.ErrorDescribers
         {
         }
 
-        public virtual Error UserNotFound() 
+        public virtual Error AccountNotFound() 
         {
-            return new Error() { Code = nameof(UserNotFound), Description = $"User not found." };
+            return new Error() { Code = nameof(AccountNotFound), Description = $"Account not found." };
+        }
+
+        public virtual Error AccountAlreadyDeactivated() 
+        {
+            return new Error() { Code = nameof(AccountAlreadyDeactivated), Description = $"Account was already deactivated." };
         }
 
         public virtual Error IncorrectPassword() 

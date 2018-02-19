@@ -15,5 +15,10 @@ namespace netcore.Core.ErrorDescribers
         {
             return new Error() { Code = nameof(UserNotFound), Description = $"User not found." };
         }
+
+        public Error UserAlreadyDeactivated() 
+        {
+            return new Error() { Code = nameof(UserAlreadyDeactivated), Description = $"User was already deactivated." };
+        }
     }
 }
