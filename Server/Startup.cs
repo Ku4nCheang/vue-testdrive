@@ -66,26 +66,30 @@ namespace netcore
             // ─── SERVER RELATED SERVICE ──────────────────────────────────────
             //
 
-            if (_AppSettings.Server.UseGZip) 
+            if (_AppSettings.Server.UseGZip)
             {
                 // setting gzip if use gzip
                 services
-                    .Configure<GzipCompressionProviderOptions>(options => {
+                    .Configure<GzipCompressionProviderOptions>(options =>
+                    {
                         options.Level = CompressionLevel.Optimal;
                     })
-                    .AddResponseCompression(options => {
+                    .AddResponseCompression(options =>
+                    {
                         options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "image/svg+xml" });
                     });
             }
 
             services
-                .Configure<MvcOptions>(options => {
+                .Configure<MvcOptions>(options =>
+                {
                     // enforce https in production environment
-                    if (!_Env.IsDevelopment() && _AppSettings.Server.UseHttps) 
+                    if (!_Env.IsDevelopment() && _AppSettings.Server.UseHttps)
                         options.Filters.Add(new RequireHttpsAttribute());
                 })
                 .AddMvc()
-                .AddJsonOptions(options => {
+                .AddJsonOptions(options =>
+                {
                     options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 });
@@ -111,7 +115,8 @@ namespace netcore
                 // since wwwroot is place outside the server, we need to set project path
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
-                app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
+                app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
+                {
                     HotModuleReplacement = true,
                     ProjectPath = Directory.GetParent(_Env.ContentRootPath).FullName
                 });
@@ -119,21 +124,22 @@ namespace netcore
             else if (_AppSettings.Server.UseHttps)
             {
                 // add url rewriter to make sure only access server via https if use https
-                app.UseRewriter( new RewriteOptions().AddRedirectToHttps());
+                app.UseRewriter(new RewriteOptions().AddRedirectToHttps());
             }
 
-            if (_AppSettings.Server.UseGZip) {
+            if (_AppSettings.Server.UseGZip)
+            {
                 app.UseResponseCompression();
             }
             // update web root file provider in order to allow append file version for tag helper.
-            var webRootPath = _Env.IsDevelopment() ? Directory.GetParent(_Env.ContentRootPath).FullName : _Env.ContentRootPath;
-            var provider = new PhysicalFileProvider(Path.Combine(webRootPath, "wwwroot"));
-            _Env.WebRootFileProvider = provider;
-            app.UseStaticFiles(new StaticFileOptions  {
+            _Env.WebRootFileProvider = _BuildWebRootFileProvider();
+            app.UseStaticFiles(new StaticFileOptions
+            {
                 // tell the browser to cache all static files.
-                FileProvider = provider,
+                FileProvider = _Env.WebRootFileProvider,
                 RequestPath = "",
-                OnPrepareResponse = ctx =>{
+                OnPrepareResponse = ctx =>
+                {
                     const int durationInSeconds = 3600 * 24 * 30;
                     ctx.Context.Response.Headers[HeaderNames.CacheControl] = "public,max-age=" + durationInSeconds;
                 }
@@ -150,6 +156,16 @@ namespace netcore
                     name: "spa-fallback",
                     defaults: new { controller = "Home", action = "Index" });
             });
+        }
+
+        //
+        // ─── PRIVATE METHODS ─────────────────────────────────────────────
+        //
+        
+        private IFileProvider _BuildWebRootFileProvider() 
+        {
+             var webRootPath = _Env.IsDevelopment() ? Directory.GetParent(_Env.ContentRootPath).FullName : _Env.ContentRootPath;
+            return new PhysicalFileProvider(Path.Combine(webRootPath, "wwwroot"));
         }
     }
 }
