@@ -43,7 +43,7 @@ namespace netcore.Controllers.API
 
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<JsonResult> Register([FromBody]RegisterViewModel model)
+        public async Task<JsonResult> Register([FromBody] RegisterViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -68,6 +68,9 @@ namespace netcore.Controllers.API
                     JoinedAt = utcNow.UtcDateTime,
                     DateOfBirth = model.DateOfBirth,
                     Grade = model.Grade,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    MiddleName = model.MiddleName,
                     DisplayName = model.DisplayName,
                     Gender = model.Gender
                 };
@@ -86,6 +89,7 @@ namespace netcore.Controllers.API
 
                 // if error is duplicated username, we try again until created the user successfully
                 shouldRetry = result.Errors.Count() == 1 && result.Errors.FirstOrDefault().Code == nameof(IdentityErrorDescriber.DuplicateUserName);
+
             } while (shouldRetry);
 
 
