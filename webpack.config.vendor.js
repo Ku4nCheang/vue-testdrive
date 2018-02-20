@@ -14,10 +14,9 @@ module.exports = (env) => {
         entry: {
             vendor: [
                 // uncomment following to support IE11
-                'event-source-polyfill',
+                // 'event-source-polyfill',
                 // 'babel-polyfill',
                 'axios',
-                'purecss/build/pure.css',
                 'vue',
                 'vue-router',
                 'vuex',

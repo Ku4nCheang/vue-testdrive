@@ -3,8 +3,10 @@ import './static/site.css'
 import Vue from 'vue'
 import './hooks' // This must be imported before any component
 
-// Vue.config.devtools = false
 Vue.config.devtools = process.env['NODE_ENV'] === 'development'
+Vue.config.ignoredElements = [
+    /ion-.*/
+]
 
 Vue.use(require('./directives').default)
 Vue.use(require('./components').default)
